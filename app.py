@@ -1,13 +1,13 @@
 import streamlit as st
 import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+import onnxruntime as ort
 from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 import pandas as pd
 import pickle
 
 # Load the trained model
-model = keras.models.load_model('model.h5')
+session = ort.InferenceSession('model.onnx')
+input_name = session.get_inputs()[0].name  # 'dense_input'
 
 # Load encoders and scaler
 with open('label_encoder_gender.pkl', 'rb') as file:
@@ -82,8 +82,9 @@ if hasattr(scaler, 'feature_names_in_'):
 input_data_scaled = scaler.transform(input_data)
 
 # Prediction
-prediction = model.predict(input_data_scaled)
-prediction_proba = prediction[0][0]
+input_array = input_data_scaled.astype(np.float32)
+prediction = session.run(None, {input_name: input_array})
+prediction_proba = prediction[0][0][0]
 
 st.subheader("Prediction Result")
 

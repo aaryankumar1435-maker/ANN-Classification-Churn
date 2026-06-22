@@ -1,12 +1,13 @@
 import streamlit as st
 import numpy as np
-import tf_keras as tf_keras
+import tensorflow as tf
+from tensorflow import keras
 from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 import pandas as pd
 import pickle
 
 # Load the trained model
-model = tf_keras.models.load_model('model.h5')
+model = keras.models.load_model('model.h5')
 
 # Load encoders and scaler
 with open('label_encoder_gender.pkl', 'rb') as file:
@@ -62,10 +63,6 @@ geo_encoded = onehot_encoder_geo.transform(
     input_data[['Geography']]
 )
 
-print("Shape:", geo_encoded.shape)
-print("Categories:", onehot_encoder_geo.categories_)
-print("Feature Names:", onehot_encoder_geo.get_feature_names_out())
-
 geo_encoded_df = pd.DataFrame(
     geo_encoded.toarray() if hasattr(geo_encoded, "toarray") else geo_encoded,
     columns=onehot_encoder_geo.get_feature_names_out()
@@ -86,7 +83,6 @@ input_data_scaled = scaler.transform(input_data)
 
 # Prediction
 prediction = model.predict(input_data_scaled)
-
 prediction_proba = prediction[0][0]
 
 st.subheader("Prediction Result")
